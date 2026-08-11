@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "farmfleet-30b6a"
+  },
+  "targets": {
+    "farmfleet-30b6a": {
+      "hosting": {
+        "atap": [
+          "atapfarmfleet"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

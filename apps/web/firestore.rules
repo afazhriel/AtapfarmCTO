@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function memberPath(farmId) {
+      return /databases/$(database)/documents/farms/$(farmId)/members/$(request.auth.uid);
+    }
+
+    function isMember(farmId) {
+      return signedIn() && exists(memberPath(farmId));
+    }
+
+    function memberRole(farmId) {
+      return get(memberPath(farmId)).data.role;
+    }
+
+    function canManage(farmId) {
+      return isMember(farmId) && memberRole(farmId) in ['owner', 'manager'];
+    }
+
+    function canOperate(farmId) {
+      return isMember(farmId) && memberRole(farmId) in ['owner', 'manager', 'operator'];
+    }
+
+    match /users/{userId} {
+      allow create, read, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+
+    match /memberships/{membershipId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if signedIn()
+        && request.resource.data.farmId is string
+        && request.resource.data.userId is string
+        && (
+          (
+            request.resource.data.userId == request.auth.uid
+            && request.resource.data.role == 'owner'
+            && getAfter(/databases/$(database)/documents/farms/$(request.resource.data.farmId)).data.ownerId == request.auth.uid
+          )
+          ||
+          (
+            canManage(request.resource.data.farmId)
+            && request.resource.data.role in ['manager', 'operator', 'viewer']
+            && exists(/databases/$(database)/documents/users/$(request.resource.data.userId))
+          )
+        );
+
+      allow update: if canManage(resource.data.farmId)
+        && request.resource.data.farmId == resource.data.farmId
+        && request.resource.data.userId == resource.data.userId
+        && resource.data.role != 'owner'
+        && request.resource.data.role in ['manager', 'operator', 'viewer'];
+
+      allow delete: if canManage(resource.data.farmId) && resource.data.role != 'owner';
+    }
+
+    match /farms/{farmId} {
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid;
+      allow read: if isMember(farmId);
+      allow update: if canManage(farmId)
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isMember(farmId) && memberRole(farmId) == 'owner';
+
+      match /members/{userId} {
+        allow read: if signedIn() && (request.auth.uid == userId || isMember(farmId));
+
+        // Bootstrap the creator as owner in the same batch as farm creation.
+        allow create: if signedIn()
+          && request.resource.data.userId == userId
+          && (
+            (
+              request.auth.uid == userId
+              && request.resource.data.role == 'owner'
+              && getAfter(/databases/$(database)/documents/farms/$(farmId)).data.ownerId == request.auth.uid
+            )
+            ||
+            (
+              canManage(farmId)
+              && request.resource.data.role in ['manager', 'operator', 'viewer']
+              && exists(/databases/$(database)/documents/users/$(userId))
+            )
+          );
+
+        allow update: if canManage(farmId)
+          && resource.data.role != 'owner'
+          && request.resource.data.userId == userId
+          && request.resource.data.role in ['manager', 'operator', 'viewer'];
+
+        allow delete: if canManage(farmId) && resource.data.role != 'owner';
+      }
+
+      match /assets/{documentId} {
+        allow read: if isMember(farmId);
+        allow create, update, delete: if canOperate(farmId);
+      }
+
+      match /telemetry/{documentId} {
+        allow read: if isMember(farmId);
+        allow create, update, delete: if canOperate(farmId);
+      }
+
+      match /tasks/{documentId} {
+        allow read: if isMember(farmId);
+        allow create, update, delete: if canOperate(farmId);
+      }
+
+      match /alerts/{documentId} {
+        allow read: if isMember(farmId);
+        allow create, update, delete: if canOperate(farmId);
+      }
+
+      match /maintenance/{documentId} {
+        allow read: if isMember(farmId);
+        allow create, update, delete: if canOperate(farmId);
+      }
+
+      match /activities/{documentId} {
+        allow read: if isMember(farmId);
+        allow create: if canOperate(farmId);
+        allow update, delete: if canManage(farmId);
+      }
+    }
+  }
+}

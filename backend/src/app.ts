@@ -15,7 +15,7 @@ export function createApp(): Express {
 
   app.use('/api/v1', systemRoutes());
   app.use('/api/v1/farms', farmRoutes());
-  app.use('/api/v1', operationsRoutes());
+  app.use('/api/v1/farms', operationsRoutes());
   app.use('/api/v1', ingestRoutes());
 
   app.use(notFoundHandler);

@@ -1,4 +1,4 @@
-import { Plus, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react';
+import { ShieldCheck, Trash2, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';

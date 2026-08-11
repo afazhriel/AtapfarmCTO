@@ -1,13 +1,11 @@
 import {
-  Activity,
   BellRing,
   Boxes,
   CheckCircle2,
   CircleGauge,
   ClipboardList,
   LoaderCircle,
-  Plus,
-  Wrench
+  Plus
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {

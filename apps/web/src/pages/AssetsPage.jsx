@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFarm } from '../contexts/FarmContext';
 import { useFarmCollection } from '../hooks/useFarmCollection';
 import { ASSET_CATEGORIES, ASSET_STATUSES } from '../lib/constants';
-import { formatDate, formatNumber } from '../lib/helpers';
+import { formatNumber } from '../lib/helpers';
 import { createFarmDocument, deleteFarmDocument, logActivity, updateFarmDocument } from '../services/firestore';
 
 const emptyForm = {

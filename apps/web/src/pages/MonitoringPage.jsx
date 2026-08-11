@@ -151,7 +151,7 @@ export default function MonitoringPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="time" tickLine={false} axisLine={false} minTickGap={28} />
                 <YAxis tickLine={false} axisLine={false} />
-                <Tooltip labelFormatter={(label) => label} formatter={(value, name, props) => [`${value} ${filteredReadings[0]?.unit || ''}`, props.payload.asset]} />
+                <Tooltip labelFormatter={(label) => label} formatter={(value, name, item) => [`${value} ${filteredReadings[0]?.unit || ''}`, item?.payload?.asset]} />
                 <Line type="monotone" dataKey="value" stroke="#0f766e" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>

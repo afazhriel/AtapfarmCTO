@@ -16,8 +16,14 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '../lib/firebase';
+import { setTokenProvider } from '../lib/api';
 
 const AuthContext = createContext(null);
+
+setTokenProvider(async () => {
+  if (!auth?.currentUser) return '';
+  return auth.currentUser.getIdToken();
+});
 
 function normalizeUser(firebaseUser) {
   if (!firebaseUser) return null;

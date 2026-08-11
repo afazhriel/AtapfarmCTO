@@ -5,11 +5,10 @@ import {
   onSnapshot,
   query,
   where,
-  writeBatch,
-  collection,
-  serverTimestamp
+  collection
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { api } from '../lib/api';
 import { useAuth } from './AuthContext';
 
 const FarmContext = createContext(null);
@@ -90,33 +89,11 @@ export function FarmProvider({ children }) {
         localStorage.setItem(STORAGE_KEY, farmId);
       },
       async createFarm({ name, type, location }) {
-        if (!user || !db) throw new Error('Authentication required.');
-        const farmRef = doc(collection(db, 'farms'));
-        const memberRef = doc(db, 'farms', farmRef.id, 'members', user.uid);
-        const membershipRef = doc(db, 'memberships', `${farmRef.id}_${user.uid}`);
-        const batch = writeBatch(db);
-        batch.set(farmRef, {
-          name,
-          type,
-          location,
-          ownerId: user.uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-        const membershipPayload = {
-          farmId: farmRef.id,
-          userId: user.uid,
-          displayName: user.displayName || user.email?.split('@')[0] || 'Owner',
-          email: user.email || '',
-          role: 'owner',
-          joinedAt: serverTimestamp()
-        };
-        batch.set(memberRef, membershipPayload);
-        batch.set(membershipRef, membershipPayload);
-        await batch.commit();
-        setSelectedFarmId(farmRef.id);
-        localStorage.setItem(STORAGE_KEY, farmRef.id);
-        return farmRef.id;
+        if (!user) throw new Error('Authentication required.');
+        const farm = await api.post('/api/v1/farms', { name, type, location });
+        setSelectedFarmId(farm.id);
+        localStorage.setItem(STORAGE_KEY, farm.id);
+        return farm.id;
       }
     }),
     [farms, memberships, selectedFarm, selectedFarmId, membership, loading, error, user]

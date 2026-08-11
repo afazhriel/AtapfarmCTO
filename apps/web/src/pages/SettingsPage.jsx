@@ -1,12 +1,11 @@
 import { CheckCircle2, Database, KeyRound, Save, Server, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import SectionHeader from '../components/SectionHeader';
 import { useToast } from '../components/ToastProvider';
 import { useAuth } from '../contexts/AuthContext';
 import { useFarm } from '../contexts/FarmContext';
 import { FARM_TYPES, ROLE_LABELS } from '../lib/constants';
-import { db } from '../lib/firebase';
+import { api } from '../lib/api';
 
 export default function SettingsPage() {
   const { user, updateOwnProfile } = useAuth();
@@ -39,7 +38,7 @@ export default function SettingsPage() {
     event.preventDefault();
     setSavingFarm(true);
     try {
-      await updateDoc(doc(db, 'farms', selectedFarmId), { ...farmForm, updatedAt: serverTimestamp() });
+      await api.patch(`/api/v1/farms/${selectedFarmId}`, farmForm);
       push('Farm settings updated.');
     } catch (error) {
       push(error.message, 'error');

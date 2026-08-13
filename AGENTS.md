@@ -829,7 +829,7 @@ Do not create empty abstractions merely to satisfy a folder structure.
 
 Use only relevant skills.
 
-`[CTO decision required]` Skill farmfleet-* di bawah ini belum diimplementasikan (`.agents/skills` masih kosong). Daftar ini adalah target routing; prioritas pembuatan skill menunggu persetujuan CTO.
+Skill farmfleet-* sudah diimplementasikan di `.agents/skills/farmfleet-*` (persetujuan CTO, 2026). Gunakan sesuai rute di bawah ini.
 
 Examples:
 
